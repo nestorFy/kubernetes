@@ -1,0 +1,61 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: eureka-server
+  namespace: ns-pangu
+  labels:
+    environment: dev
+    tier: backend
+    app: eureka-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      environment: dev
+      app: eureka-server
+  template:
+    metadata:
+      labels:
+        environment: dev
+        tier: backend
+        app: eureka-server
+    spec:
+      containers:
+      - name: eureka-server
+        image: harbor.scnebula.com/tax-pangu/eureka:v0.1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 7761
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eureka-server-service
+  namespace: ns-pangu
+spec:
+  selector:
+    environment: dev
+    tier: backend
+    app: eureka-server
+  clusterIP: 10.9.74.142
+  type: ClusterIP
+  ports:
+    - name: web
+      port: 80
+      targetPort: 7761
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: eureka-ingress
+  namespace: ns-pangu
+spec:
+  rules:
+  - host: eureka.scnebula.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: eureka-server-service
+          servicePort: web

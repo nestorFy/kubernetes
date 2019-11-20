@@ -1,0 +1,26 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: tax-base
+  namespace: ns-pangu
+  labels:
+    app: tax-base
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        environment: dev
+        tier: backend
+        app: tax-base
+    spec:
+      containers:
+      - name: tax-base
+        image: harbor.scnebula.com/tax-pangu/base:v0.3
+        ports:
+        - containerPort: 7298
+      hostAliases:
+              - ip: "10.9.74.142"
+                hostnames:
+                  - "eureka.scnebula.com"

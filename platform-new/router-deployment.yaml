@@ -1,0 +1,57 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: tax-router
+  namespace: ns-pangu
+  labels:
+    app: tax-router
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        environment: dev
+        tier: backend
+        app: tax-router
+    spec:
+      containers:
+      - name: tax-router
+        image: harbor.scnebula.com/tax-pangu/router:v0.1
+        ports:
+        - containerPort: 7765
+#      hostAliases:
+#        - ip: "192.168.100.82"
+#          hostnames:
+#            - "eureka.scnebula.com"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: router-server
+  namespace: ns-pangu
+spec:
+  selector:
+    environment: dev
+    tier: backend
+    app: tax-router
+  ports:
+    - name: router
+      port: 80
+      targetPort: 7765
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: router-ingress
+  namespace: ns-pangu
+spec:
+  rules:
+  - host: router.scnebula.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: router-server
+          servicePort: router

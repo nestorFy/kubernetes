@@ -1,0 +1,81 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pangu-user
+  namespace: ns-pangu
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: ns-pangu
+  name: role-pangu
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["list", "get", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["extensions", "apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["nodes","replicationcontrollers", "events", "configmaps", "secrets", "services", "ingresses", "daemonsets", "persistentvolumeclaims"]
+  verbs: ["list", "get", "watch"]
+- apiGroups: ["extensions", "apps"]
+  resources: ["daemonsets", "ingresses", "deployments", "replicasets", "statefulsets"]
+  verbs: ["list", "get", "watch"]
+- apiGroups: ["extensions", "batch"]
+  resources: ["cronjobs", "jobs"]
+  verbs: ["list", "get", "watch"]
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["list", "get", "watch"]
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create"]
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: role-bind-pangu
+  namespace: ns-pangu
+subjects:
+- kind: ServiceAccount
+  name: pangu-user
+  namespace: ns-pangu
+roleRef:
+  kind: Role
+  name: role-pangu
+  apiGroup: rbac.authorization.k8s.io
+
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  # "namespace" omitted since ClusterRoles
+  name: pangu-spec
+rules:
+- apiGroups: [""]
+  resources: [ "namespaces", "resourcequotas", "limitranges"]
+  verbs: ["list", "get"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["roles", "clusterroles"]
+  verbs: ["list"]
+- apiGroups: ["storage.k8s.io"]
+  resources: ["storageclasses"]
+  verbs: ["list"]
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: role-clusert-bind-pangu
+subjects:
+- kind: ServiceAccount
+  name: pangu-user
+  namespace: ns-pangu
+roleRef:
+  kind: ClusterRole
+  name: pangu-spec
+  apiGroup: rbac.authorization.k8s.io

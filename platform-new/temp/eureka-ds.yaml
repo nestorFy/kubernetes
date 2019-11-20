@@ -1,0 +1,35 @@
+---
+kind: DaemonSet
+apiVersion: extensions/v1beta1
+metadata:
+  name: eureka-server
+  namespace: ns-pangu
+  labels:
+    app: eureka-server
+spec:
+  template:
+    metadata:
+      labels:
+        app: eureka-server
+    spec:
+      containers:
+      - image: harbor.scnebula.com/tax-pangu/eureka:v0.1
+        name: eureka-server
+        ports:
+        - name: http
+          containerPort: 7761
+          hostPort: 7761
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: eureka-server-service
+  namespace: ns-pangu
+spec:
+  selector:
+    app: eureka-server
+  ports:
+    - protocol: TCP
+      port: 7761
+      targetPort: 7761
+      name: web
